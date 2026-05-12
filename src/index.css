@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --animation-scan: scan 2s linear infinite;
+  @keyframes scan {
+    0% { top: 0%; opacity: 0; }
+    5% { opacity: 1; }
+    95% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+    margin: 0;
+    padding: 0;
+  }
+}

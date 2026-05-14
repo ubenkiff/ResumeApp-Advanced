@@ -1,19 +1,6 @@
-import { Resend } from 'resend';
 import dotenv from 'dotenv';
+import emailService from './services/emailService.js';
 dotenv.config();
-
-let resendClient = null;
-
-function getResendClient() {
-  if (!resendClient) {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      throw new Error('RESEND_API_KEY environment variable is required for email features');
-    }
-    resendClient = new Resend(apiKey);
-  }
-  return resendClient;
-}
 
 // Email templates
 const templates = {
@@ -108,12 +95,10 @@ const templates = {
 
 // Send email function
 async function sendEmail(to, type, data) {
-  const from = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+  const recipient = (to || '').trim();
   
-  console.log(`Attempting to send ${type} email to ${to}`);
-  
-  if (!to || !to.includes('@')) {
-    console.error('Invalid email address:', to);
+  if (!recipient || !recipient.includes('@')) {
+    console.error('Invalid email address:', recipient);
     return null;
   }
   
@@ -133,26 +118,13 @@ async function sendEmail(to, type, data) {
       return null;
   }
 
-  try {
-    const resend = getResendClient();
-    const { data: emailData, error } = await resend.emails.send({
-      from,
-      to,
-      subject: template.subject,
-      html: template.html,
-    });
+  const result = await emailService.sendEmail({
+    to: recipient,
+    subject: template.subject,
+    html: template.html
+  });
 
-    if (error) {
-      console.error('Resend API error:', error);
-      return null;
-    }
-    
-    console.log(`✅ Email sent to ${to}, ID:`, emailData?.id);
-    return emailData;
-  } catch (error) {
-    console.error('Email send exception:', error.message);
-    return null;
-  }
+  return result.success ? result.data : null;
 }
 
 export { sendEmail };

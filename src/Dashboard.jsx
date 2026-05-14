@@ -11,7 +11,26 @@ import AIAssistant from './pages/AIAssistant';
 import ReferencesManager from './components/ReferencesManager';
 import BlurSnipTool from './components/BlurSnipTool';
 import TemplateManager from './templates/TemplateManager';
-import { Shield, Sparkles } from 'lucide-react';
+import ScannerView from './pages/ScannerView';
+import Settings from './pages/Settings';
+import { 
+  Shield, 
+  Sparkles, 
+  LayoutDashboard, 
+  User, 
+  Briefcase, 
+  GraduationCap, 
+  Code, 
+  FolderOpen, 
+  Trophy, 
+  Bot, 
+  Users, 
+  Wand2, 
+  LineChart, 
+  Settings as SettingsIcon,
+  LogOut
+} from 'lucide-react';
+import featureFlags from './config/featureFlags';
 
 function Dashboard({ user, onLogout }) {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -80,16 +99,18 @@ function Dashboard({ user, onLogout }) {
   };
 
   const menuItems = [
-    { id: 'dashboard', name: 'Dashboard', icon: 'fas fa-tachometer-alt' },
-    { id: 'profile', name: 'Profile', icon: 'fas fa-user' },
-    { id: 'experience', name: 'Experience', icon: 'fas fa-briefcase' },
-    { id: 'education', name: 'Education', icon: 'fas fa-graduation-cap' },
-    { id: 'skills', name: 'Skills', icon: 'fas fa-code' },
-    { id: 'projects', name: 'Projects', icon: 'fas fa-folder-open' },
-    { id: 'achievements', name: 'Achievements', icon: 'fas fa-trophy' },
-    { id: 'ai-assistant', name: 'AI Assistant', icon: 'fas fa-robot' },
-    { id: 'references', name: 'References', icon: 'fas fa-users' },
-    { id: 'templates', name: 'AI Templates', icon: 'fas fa-wand-magic-sparkles' }
+    { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
+    { id: 'profile', name: 'Profile', icon: User },
+    { id: 'experience', name: 'Experience', icon: Briefcase },
+    { id: 'education', name: 'Education', icon: GraduationCap },
+    { id: 'skills', name: 'Skills', icon: Code },
+    { id: 'projects', name: 'Projects', icon: FolderOpen },
+    { id: 'achievements', name: 'Achievements', icon: Trophy },
+    { id: 'ai-assistant', name: 'AI Assistant', icon: Bot },
+    { id: 'references', name: 'References', icon: Users },
+    { id: 'templates', name: 'AI Templates', icon: Wand2 },
+    ...(featureFlags.impactScanner ? [{ id: 'scanner', name: 'Impact Scanner', icon: LineChart }] : []),
+    { id: 'settings', name: 'Settings', icon: SettingsIcon }
   ];
 
   const renderContent = () => {
@@ -206,6 +227,14 @@ function Dashboard({ user, onLogout }) {
                 Blur & Snip
               </button>
               
+              {/* Impact Scanner - New Docked Tab */}
+              <button
+                onClick={() => setCurrentPage('scanner')}
+                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center gap-2 transition shadow-sm"
+              >
+                <i className="fas fa-chart-line"></i> Impact Scanner
+              </button>
+              
               {/* Share Link - Premium only */}
               {subscriptionStatus === 'premium' ? (
                 <button
@@ -280,6 +309,12 @@ function Dashboard({ user, onLogout }) {
         return <ReferencesManager />;
       case 'templates':
         return <TemplateManager username={user?.username} />;
+      case 'scanner':
+        return featureFlags.impactScanner ? (
+          <ScannerView />
+        ) : null;
+      case 'settings':
+        return <Settings />;
       default:
         return null;
     }
@@ -288,32 +323,36 @@ function Dashboard({ user, onLogout }) {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className="w-64 bg-gray-900 shadow-lg">
+      <div className="w-64 bg-gray-900 shadow-lg flex flex-col h-screen sticky top-0">
         <div className="p-6 border-b border-gray-800">
           <h1 className="text-xl font-bold text-white">ResumeApp</h1>
         </div>
-        <nav className="p-4">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setCurrentPage(item.id)}
-              className={`w-full flex items-center px-4 py-3 rounded-lg mb-1 transition-colors ${
-                currentPage === item.id
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-              }`}
-            >
-              <i className={`${item.icon} w-5 mr-3`}></i>
-              {item.name}
-            </button>
-          ))}
+        <nav className="p-4 flex-1 overflow-y-auto">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setCurrentPage(item.id)}
+                className={`w-full flex items-center px-4 py-3 rounded-lg mb-1 transition-colors ${
+                  currentPage === item.id
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                }`}
+              >
+                <Icon size={18} className="mr-3" />
+                {item.name}
+              </button>
+            );
+          })}
         </nav>
-        <div className="absolute bottom-0 w-64 p-4 border-t border-gray-800">
+        <div className="p-4 border-t border-gray-800 mt-auto">
           <button
             onClick={onLogout}
-            className="block w-full text-left text-gray-400 hover:text-white py-2 transition"
+            className="w-full flex items-center px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
           >
-            <i className="fas fa-sign-out-alt w-5 mr-3"></i> Logout
+            <LogOut size={18} className="mr-3" />
+            Logout
           </button>
         </div>
       </div>

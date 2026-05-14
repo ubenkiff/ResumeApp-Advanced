@@ -15,6 +15,9 @@ import referencesRouter from './routes/references.js';
 import aiRouter from './routes/ai.js';
 import coverDataRouter from './routes/user-cover-data.js';
 import optimizedResumesRouter, { getPublicOptimizedResume } from './routes/optimized-resumes.js';
+import authRouter from './routes/auth.js';
+import { authenticate } from './middleware/auth.js';
+import imageService from './services/imageService.js';
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
@@ -76,21 +79,8 @@ function parseDate(dateStr) {
   return new Date(dateStr);
 }
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
-// Configure multer for Cloudinary
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'resumeapp',
-    allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'webp']
-  }
-});
+// Configure multer for memory storage (ImageService will handle upload)
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // Helper function to get client IP
@@ -100,197 +90,28 @@ const getClientIp = (req) => {
          'Unknown';
 };
 
+// ============ HEALTH CHECK ============
+app.get('/api/health', async (req, res) => {
+  try {
+    const dbCheck = await pool.query('SELECT 1');
+    res.json({
+      status: 'healthy',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      database: dbCheck.rows.length > 0 ? 'connected' : 'error',
+      aiMode: process.env.AI_MODE || 'auto'
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'unhealthy',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // ============ AUTH ROUTES ============
-
-// Register
-app.post('/api/auth/register', async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-    
-    if (!email || !email.includes('@')) {
-      return res.status(400).json({ error: 'Valid email is required' });
-    }
-    
-    const existing = await pool.query('SELECT id FROM users WHERE username = $1 OR email = $2', [username, email]);
-    if (existing.rows.length > 0) {
-      return res.status(400).json({ error: 'Username or email already exists' });
-    }
-    
-    const password_hash = await bcrypt.hash(password, 10);
-    
-    const result = await pool.query(
-      'INSERT INTO users (username, email, password_hash, subscription_status) VALUES ($1, $2, $3, $4) RETURNING id, username, email',
-      [username, email, password_hash, 'free']
-    );
-    
-    const userId = result.rows[0].id;
-    
-    await pool.query('INSERT INTO profiles (user_id) VALUES ($1)', [userId]);
-    
-    const token = jwt.sign({ userId }, JWT_SECRET);
-    
-    const welcomeData = { username };
-    sendEmail(email, 'welcome', welcomeData)
-      .then(async (emailResult) => {
-        console.log(`Welcome email sent to ${email}`);
-        await pool.query(
-          'INSERT INTO email_logs (user_id, recipient_email, email_type, status, sent_at) VALUES ($1, $2, $3, $4, NOW())',
-          [userId, email, 'welcome', emailResult ? 'sent' : 'failed']
-        );
-      })
-      .catch(async (err) => {
-        console.error('Welcome email failed:', err.message);
-        await pool.query(
-          'INSERT INTO email_logs (user_id, recipient_email, email_type, status, error_message, sent_at) VALUES ($1, $2, $3, $4, $5, NOW())',
-          [userId, email, 'welcome', 'failed', err.message]
-        );
-      });
-    
-    res.json({ user: result.rows[0], token });
-  } catch (error) {
-    console.error('Register error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Login
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    
-    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-    if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-    
-    const user = result.rows[0];
-    const valid = await bcrypt.compare(password, user.password_hash);
-    if (!valid) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-    
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET);
-    
-    const timestamp = new Date().toLocaleString();
-    const ip = getClientIp(req);
-    const loginData = { username, timestamp, ip };
-    sendEmail(user.email, 'loginAlert', loginData)
-      .then(async (emailResult) => {
-        console.log(`Login alert email sent to ${user.email}`);
-        await pool.query(
-          'INSERT INTO email_logs (user_id, recipient_email, email_type, status, sent_at) VALUES ($1, $2, $3, $4, NOW())',
-          [user.id, user.email, 'loginAlert', emailResult ? 'sent' : 'failed']
-        );
-      })
-      .catch(async (err) => {
-        console.error('Login alert email failed:', err.message);
-        await pool.query(
-          'INSERT INTO email_logs (user_id, recipient_email, email_type, status, error_message, sent_at) VALUES ($1, $2, $3, $4, $5, NOW())',
-          [user.id, user.email, 'loginAlert', 'failed', err.message]
-        );
-      });
-    
-    res.json({ user: { id: user.id, username: user.username, email: user.email }, token });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Verify token middleware
-function authenticate(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.userId = decoded.userId;
-    next();
-  } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
-  }
-}
-
-// Get current user
-app.get('/api/auth/me', authenticate, async (req, res) => {
-  try {
-    const result = await pool.query('SELECT id, username, email, created_at, subscription_status FROM users WHERE id = $1', [req.userId]);
-    res.json(result.rows[0]);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ============ FORGOT PASSWORD ROUTES ============
-
-// Forgot Password - Request reset
-app.post('/api/auth/forgot-password', async (req, res) => {
-  try {
-    const { email } = req.body;
-    
-    // Find user by email (case insensitive)
-    const result = await pool.query('SELECT id, username FROM users WHERE LOWER(email) = LOWER($1)', [email]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Email not found' });
-    }
-    
-    const user = result.rows[0];
-    
-    // Generate reset token (expires in 1 hour)
-    const resetToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
-    
-    // Update user with reset token
-    await pool.query(
-      'UPDATE users SET reset_token = $1, reset_token_expires = NOW() + INTERVAL \'1 hour\' WHERE id = $2',
-      [resetToken, user.id]
-    );
-    
-    const resetLink = `${process.env.FRONTEND_URL || 'https://resumeapp.vercel.app'}/reset-password?token=${resetToken}`;
-    
-    // Send email
-    await sendEmail(email, 'passwordReset', { username: user.username, resetLink });
-    
-    res.json({ message: 'Password reset link sent to your email' });
-  } catch (error) {
-    console.error('Forgot password error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Reset Password - Update password
-app.post('/api/auth/reset-password', async (req, res) => {
-  try {
-    const { token, password } = req.body;
-    
-    // Verify token
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    // Find user with valid reset token
-    const user = await pool.query(
-      'SELECT id FROM users WHERE id = $1 AND reset_token = $2 AND reset_token_expires > NOW()',
-      [decoded.userId, token]
-    );
-    
-    if (user.rows.length === 0) {
-      return res.status(400).json({ error: 'Invalid or expired reset token' });
-    }
-    
-    // Hash new password
-    const password_hash = await bcrypt.hash(password, 10);
-    
-    // Update password and clear reset token
-    await pool.query(
-      'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2',
-      [password_hash, user.rows[0].id]
-    );
-    
-    res.json({ message: 'Password reset successfully' });
-  } catch (error) {
-    console.error('Reset password error:', error);
-    res.status(400).json({ error: 'Invalid or expired reset token' });
-  }
-});
+app.use('/api/auth', authRouter);
 
 // ============ ADMIN MIDDLEWARE ============
 
@@ -355,13 +176,13 @@ app.post('/api/admin/test-email', authenticate, isAdmin, async (req, res) => {
 });
 
 // ============ IMAGE UPLOAD ROUTE ============
-
 app.post('/api/upload', authenticate, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No image uploaded' });
     }
-    res.json({ url: req.file.path });
+    const result = await imageService.uploadImage(req.file);
+    res.json({ url: result.url, mode: result.mode });
   } catch (error) {
     console.error('Upload error:', error);
     res.status(500).json({ error: error.message });

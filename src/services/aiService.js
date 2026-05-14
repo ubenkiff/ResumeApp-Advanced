@@ -1,6 +1,6 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const FORMAT_INSTRUCTIONS = {
   executive: `
@@ -83,15 +83,17 @@ export const transformResumeWithAI = async (profileData, targetFormat) => {
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json"
-      }
-    });
+    const model = ai.getGenerativeModel({ model: "gemini-pro" });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let text = response.text();
+    
+    // Clean potential markdown and whitespace
+    text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) text = jsonMatch[0];
 
-    return JSON.parse(response.text);
+    return JSON.parse(text);
   } catch (error) {
     console.error("AI Transformation Error:", error);
     throw error;

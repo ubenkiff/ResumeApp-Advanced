@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "tsx temp-repo/backend/index.js",
     "build": "vite build",
+    "build:staging": "vite build --mode staging",
     "preview": "vite preview",
+    "preview:staging": "vite preview --mode staging",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
   },
@@ -26,6 +28,7 @@
     "framer-motion": "^12.38.0",
     "groq-sdk": "^1.2.0",
     "html-to-image": "^1.11.13",
+    "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",

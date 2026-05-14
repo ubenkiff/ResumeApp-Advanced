@@ -11,45 +11,46 @@ function MinimalTemplate({ data }) {
   });
 
   return (
-    <div className="bg-white max-w-[794px] mx-auto shadow-lg print:shadow-none p-8" style={{ fontFamily: 'Arial, Calibri, sans-serif' }}>
-      {/* Header - Straight from ATSScore.jsx */}
-      <div className="border-b-2 border-gray-300 pb-4 mb-6">
-        <h1 className="text-2xl font-bold text-black mb-1">{profile.name || 'Your Name'}</h1>
-        <p className="text-md text-gray-700 mb-2">{profile.title || 'Professional Title'}</p>
-        <div className="text-sm text-gray-600">
-          {profile.email && <div>Email: {profile.email}</div>}
-          {profile.phone && <div>Phone: {profile.phone}</div>}
-          {profile.location && <div>Location: {profile.location}</div>}
-          {profile.linkedin && <div>LinkedIn: {profile.linkedin}</div>}
+    <div className="bg-white max-w-[794px] mx-auto shadow-lg print:shadow-none p-10 text-black" style={{ fontFamily: '"Inter", "Segoe UI", Arial, sans-serif', color: '#000' }}>
+      {/* Header - ATS Style */}
+      <div className="text-center border-b-2 border-black pb-4 mb-6">
+        <h1 className="text-2xl font-bold uppercase tracking-tight mb-1">{profile.name || 'Your Name'}</h1>
+        <p className="text-sm font-semibold mb-2">{profile.title || 'Professional Title'}</p>
+        <div className="text-xs space-x-3">
+          {profile.email && <span>{profile.email}</span>}
+          {profile.phone && <span>| {profile.phone}</span>}
+          {profile.location && <span>| {profile.location}</span>}
+          {profile.linkedin && <span>| LinkedIn: {profile.linkedin}</span>}
         </div>
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-6">
         {/* Professional Summary */}
         {profile.bio && (
-          <div className="mb-5">
-            <h2 className="text-md font-bold text-black uppercase border-b border-gray-300 pb-1 mb-2">Professional Summary</h2>
-            <p className="text-sm text-gray-800 leading-relaxed">{profile.bio}</p>
+          <div className="mb-6">
+            <h2 className="text-sm font-bold uppercase border-b border-black pb-1 mb-2">Experience Summary</h2>
+            <p className="text-xs leading-relaxed text-justify">{profile.bio.split('\n').slice(0, 3).join('\n')}</p>
           </div>
         )}
 
         {/* Work Experience */}
         {experience.length > 0 && (
-          <div className="mb-5">
-            <h2 className="text-md font-bold text-black uppercase border-b border-gray-300 pb-1 mb-3">Work Experience</h2>
-            {experience.map((exp) => (
+          <div className="mb-6">
+            <h2 className="text-sm font-bold uppercase border-b border-black pb-1 mb-3">Professional Experience</h2>
+            {experience.slice(0, 5).map((exp) => (
               <div key={exp.id} className="mb-4">
-                <div className="flex justify-between flex-wrap">
-                  <div>
-                    <h3 className="text-sm font-bold text-black">{exp.job_title}</h3>
-                    <p className="text-sm text-gray-700">{exp.company}{exp.location ? `, ${exp.location}` : ''}</p>
-                  </div>
-                  <p className="text-sm text-gray-500">{exp.start_date} — {exp.current ? 'Present' : exp.end_date}</p>
+                <div className="flex justify-between items-baseline mb-1">
+                  <h3 className="text-xs font-bold uppercase">{exp.job_title}</h3>
+                  <span className="text-[10px] font-semibold">{exp.start_date} — {exp.current ? 'Present' : exp.end_date}</span>
                 </div>
+                <p className="text-[10px] font-bold italic mb-1">{exp.company}{exp.location ? ` | ${exp.location}` : ''}</p>
                 {exp.highlights && exp.highlights.length > 0 && (
-                  <ul className="mt-2 list-disc list-inside space-y-0.5">
-                    {exp.highlights.slice(0, 6).map((h, i) => (
-                      <li key={i} className="text-sm text-gray-700">{h}</li>
+                  <ul className="mt-1 space-y-0.5">
+                    {exp.highlights.slice(0, 5).map((h, i) => (
+                      <li key={i} className="text-[10px] flex gap-2">
+                        <span className="shrink-0">-</span>
+                        <span>{h}</span>
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -60,63 +61,59 @@ function MinimalTemplate({ data }) {
 
         {/* Skills */}
         {skills.length > 0 && (
-          <div className="mb-5">
-            <h2 className="text-md font-bold text-black uppercase border-b border-gray-300 pb-1 mb-2">Skills</h2>
-            {Object.entries(skillsByCategory).map(([cat, catSkills]) => (
-              <div key={cat} className="mb-3">
-                <h3 className="text-sm font-semibold text-gray-800">{cat}</h3>
-                <p className="text-sm text-gray-700">{catSkills.map(s => s.name).join(', ')}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Projects */}
-        {projects.length > 0 && (
-          <div className="mb-5">
-            <h2 className="text-md font-bold text-black uppercase border-b border-gray-300 pb-1 mb-2">Key Projects</h2>
-            {projects.map((p) => (
-              <div key={p.id} className="mb-3">
-                <h3 className="text-sm font-bold text-black">{p.title}</h3>
-                <p className="text-sm text-gray-700">{p.description}</p>
-                {p.tech_stack && p.tech_stack.length > 0 && (
-                  <p className="text-sm text-gray-600 mt-1 italic">Stack: {p.tech_stack.join(', ')}</p>
-                )}
-              </div>
-            ))}
+          <div className="mb-6">
+            <h2 className="text-sm font-bold uppercase border-b border-black pb-1 mb-2">Technical Skills & Core Competencies</h2>
+            <div className="space-y-1">
+              {Object.entries(skillsByCategory).map(([cat, catSkills]) => (
+                <div key={cat} className="flex gap-2 text-[10px]">
+                  <span className="font-bold w-32 shrink-0">{cat}:</span>
+                  <span className="flex-1">{catSkills.map(s => s.name).join(', ')}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
         {/* Education */}
         {education.length > 0 && (
-          <div className="mb-5">
-            <h2 className="text-md font-bold text-black uppercase border-b border-gray-300 pb-1 mb-2">Education</h2>
-            {education.map((edu) => (
-              <div key={edu.id} className="mb-3">
-                <div className="flex justify-between flex-wrap">
-                  <div>
-                    <h3 className="text-sm font-bold text-black">{edu.degree}{edu.field ? ` in ${edu.field}` : ''}</h3>
-                    <p className="text-sm text-gray-700">{edu.institution}{edu.location ? `, ${edu.location}` : ''}</p>
-                  </div>
-                  <p className="text-sm text-gray-500">{edu.start_year} — {edu.end_year || 'Present'}</p>
+          <div className="mb-6">
+            <h2 className="text-sm font-bold uppercase border-b border-black pb-1 mb-2">Education</h2>
+            {education.slice(0, 2).map((edu) => (
+              <div key={edu.id} className="mb-2">
+                <div className="flex justify-between items-baseline">
+                  <h3 className="text-xs font-bold uppercase">{edu.degree}{edu.field ? ` in ${edu.field}` : ''}</h3>
+                  <span className="text-[10px] font-semibold">{edu.start_year} — {edu.end_year || 'Present'}</span>
                 </div>
+                <p className="text-[10px]">{edu.institution}{edu.location ? `, ${edu.location}` : ''}</p>
               </div>
             ))}
           </div>
         )}
 
-        {/* Achievements */}
-        {achievements.length > 0 && (
-          <div className="mb-5">
-            <h2 className="text-md font-bold text-black uppercase border-b border-gray-300 pb-1 mb-2">Achievements</h2>
-            {achievements.map((a) => (
-              <div key={a.id} className="mb-2">
-                <h3 className="text-sm font-bold text-black">{a.title}</h3>
-                <p className="text-sm text-gray-600">{a.issuer} — {a.date}</p>
-              </div>
-            ))}
+        {/* Achievements / Projects Integrated */}
+        {(achievements.length > 0 || projects.length > 0) && (
+          <div className="mb-6">
+            <h2 className="text-sm font-bold uppercase border-b border-black pb-1 mb-2">Key Projects & Recognition</h2>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+              {projects.slice(0, 4).map(p => (
+                <div key={p.id}>
+                  <h3 className="text-[10px] font-bold uppercase">{p.title}</h3>
+                  <p className="text-[10px] leading-tight text-gray-700">{p.description}</p>
+                </div>
+              ))}
+              {achievements.slice(0, 4).map(a => (
+                <div key={a.id}>
+                  <h3 className="text-[10px] font-bold uppercase">{a.title}</h3>
+                  <p className="text-[10px] leading-tight text-gray-700">{a.issuer}</p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
+      </div>
+
+      <div className="mt-8 text-center border-t border-gray-100 pt-4 print:hidden">
+        <p className="text-[10px] text-gray-400 italic">Minimal Template optimized for ATS and 2-page achievement focus.</p>
       </div>
 
       <style>{`

@@ -1,17 +1,31 @@
 # ResumeApp - Complete API Documentation
 
 ## Base URLs
-- **Production:** `https://resumeapp-backend.onrender.com/api`
-- **Staging:** `https://resumeapp-staging.onrender.com/api`
-- **Local:** `http://localhost:5001/api`
+- **Main Backend (Python/FastAPI):** `http://localhost:8000` or `https://resuma-api.onrender.com`
+- **Legacy Backend (Node.js):** `http://localhost:3000/api`
+- **Production Frontend:** `https://resumeapp.onrender.com`
 
-## Authentication
-All protected endpoints require Bearer token:
-Authorization: Bearer <your_jwt_token>
+## 1. ENGINEERING OPTIMIZATION (Python API)
+These endpoints are optimized for UAE/GCC engineering metrics.
+
+### POST /api/resume/analyze
+Analyzes ATS performance and UAE market fit.
+
+### POST /api/resume/optimize
+AI-powered resume rewriting for specific roles and industries.
+
+### POST /api/linkedin/optimize
+Optimizes LinkedIn headlines and 'About' sections for visibility.
+
+### GET /api/jobs/match
+Compares resume content against job descriptions.
+
+### POST /api/export/csv
+Exports resume versions into a CSV file.
 
 ---
 
-## 1. AUTHENTICATION ENDPOINTS
+## 2. AUTHENTICATION ENDPOINTS
 
 ### POST /api/auth/register
 Register a new user

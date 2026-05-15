@@ -13,6 +13,8 @@ import BlurSnipTool from './components/BlurSnipTool';
 import TemplateManager from './templates/TemplateManager';
 import ScannerView from './pages/ScannerView';
 import Settings from './pages/Settings';
+import AdminHeroUploader from './components/AdminHeroUploader';
+import HeroDisplay from './components/HeroDisplay';
 import { 
   Shield, 
   Sparkles, 
@@ -44,6 +46,31 @@ function Dashboard({ user, onLogout }) {
   const [subscriptionStatus, setSubscriptionStatus] = useState('free');
   const [showBlurSnip, setShowBlurSnip] = useState(false);
   const [resumeDataForBlur, setResumeDataForBlur] = useState(null);
+  const [globalImages, setGlobalImages] = useState({});
+
+  const DEFAULT_IMAGES = {
+    executive: "input_file_0.png",
+    professional: "input_file_1.png",
+    ats: "input_file_2.png",
+    modern: "input_file_3.png",
+    minimal: "input_file_4.png",
+    creative: "input_file_5.png"
+  };
+
+  const isAdmin = user?.username === 'Uddi_Test2';
+
+  const fetchGlobalImages = async () => {
+    try {
+      const response = await api.get('/global-templates');
+      setGlobalImages(response.data);
+    } catch (error) {
+      console.error('Error loading global images:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchGlobalImages();
+  }, []);
 
   useEffect(() => {
     fetchAllData();
@@ -135,6 +162,35 @@ function Dashboard({ user, onLogout }) {
               <p className="text-gray-500">Welcome back, {user?.username}!</p>
             </div>
 
+            {/* Resume Hero Section */}
+            <div className="mb-10">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Resume Templates</h2>
+                {isAdmin && <span className="bg-purple-100 text-purple-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Admin Mode</span>}
+              </div>
+              
+              {isAdmin ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+                  {['executive', 'professional', 'ats', 'modern', 'minimal', 'creative'].map(type => (
+                    <AdminHeroUploader
+                      key={type}
+                      templateType={type}
+                      currentImage={globalImages[type]}
+                      defaultImage={DEFAULT_IMAGES[type]}
+                      onUpload={fetchGlobalImages}
+                      label={type.charAt(0).toUpperCase() + type.slice(1)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <HeroDisplay 
+                  images={globalImages} 
+                  defaultImages={DEFAULT_IMAGES} 
+                  onTemplateClick={() => setCurrentPage('templates')} 
+                />
+              )}
+            </div>
+
             {/* Subscription Banner */}
             {subscriptionStatus !== 'premium' && (
               <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white p-4 rounded-lg mb-6">
@@ -154,49 +210,69 @@ function Dashboard({ user, onLogout }) {
             )}
 
             {/* Stats Cards */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <i className="fas fa-user text-blue-600 text-xl"></i>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition cursor-pointer" onClick={() => setCurrentPage('profile')}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <User size={20} className="text-blue-600" />
                   </div>
-                  <span className="text-2xl font-bold text-gray-800">1</span>
                 </div>
-                <h3 className="text-gray-900 font-semibold">Profile</h3>
-                <p className="text-gray-500 text-sm mt-1">Complete your personal information</p>
+                <h3 className="text-gray-900 font-bold text-sm">Profile</h3>
+                <p className="text-gray-500 text-xs mt-1">Personal Info</p>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <i className="fas fa-briefcase text-green-600 text-xl"></i>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition cursor-pointer" onClick={() => setCurrentPage('experience')}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Briefcase size={20} className="text-green-600" />
                   </div>
-                  <span className="text-2xl font-bold text-gray-800">{experience.length}</span>
+                  <span className="text-xl font-bold text-gray-800">{experience.length}</span>
                 </div>
-                <h3 className="text-gray-900 font-semibold">Work Experience</h3>
-                <p className="text-gray-500 text-sm mt-1">Track your professional journey</p>
+                <h3 className="text-gray-900 font-bold text-sm">Experience</h3>
+                <p className="text-gray-500 text-xs mt-1">Work History</p>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <i className="fas fa-code text-purple-600 text-xl"></i>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition cursor-pointer" onClick={() => setCurrentPage('skills')}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Code size={20} className="text-purple-600" />
                   </div>
-                  <span className="text-2xl font-bold text-gray-800">{skills.length}</span>
+                  <span className="text-xl font-bold text-gray-800">{skills.length}</span>
                 </div>
-                <h3 className="text-gray-900 font-semibold">Skills</h3>
-                <p className="text-gray-500 text-sm mt-1">Showcase your expertise</p>
+                <h3 className="text-gray-900 font-bold text-sm">Skills</h3>
+                <p className="text-gray-500 text-xs mt-1">Core Expertise</p>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition cursor-pointer" onClick={() => setCurrentPage('templates')}>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
-                    <i className="fas fa-wand-magic-sparkles text-pink-600 text-xl"></i>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition cursor-pointer" onClick={() => setCurrentPage('projects')}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <FolderOpen size={20} className="text-indigo-600" />
                   </div>
-                  <span className="text-2xl font-bold text-gray-800">4</span>
+                  <span className="text-xl font-bold text-gray-800">{projects.length}</span>
                 </div>
-                <h3 className="text-gray-900 font-semibold">AI Templates</h3>
-                <p className="text-gray-500 text-sm mt-1">Crystallize for specific roles</p>
+                <h3 className="text-gray-900 font-bold text-sm">Projects</h3>
+                <p className="text-gray-500 text-xs mt-1">Recent Work</p>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition cursor-pointer" onClick={() => setCurrentPage('achievements')}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <Trophy size={20} className="text-amber-600" />
+                  </div>
+                  <span className="text-xl font-bold text-gray-800">{achievements.length}</span>
+                </div>
+                <h3 className="text-gray-900 font-bold text-sm">Awards</h3>
+                <p className="text-gray-500 text-xs mt-1">Achievements</p>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition cursor-pointer" onClick={() => setCurrentPage('templates')}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                    <Sparkles size={20} className="text-pink-600" />
+                  </div>
+                </div>
+                <h3 className="text-gray-900 font-bold text-sm">AI Studio</h3>
+                <p className="text-gray-500 text-xs mt-1">Crystallize</p>
               </div>
             </div>
 
@@ -325,7 +401,19 @@ function Dashboard({ user, onLogout }) {
       {/* Sidebar */}
       <div className="w-64 bg-gray-900 shadow-lg flex flex-col h-screen sticky top-0">
         <div className="p-6 border-b border-gray-800">
-          <h1 className="text-xl font-bold text-white">ResumeApp</h1>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center shadow-lg">
+              <i className="fas fa-file-alt text-white text-sm"></i>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-black text-lg text-white tracking-tighter leading-none font-display">
+                Resume<span className="text-blue-400">App</span>
+              </span>
+              <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mt-1 font-display">
+                Engineering Professionals
+              </span>
+            </div>
+          </div>
         </div>
         <nav className="p-4 flex-1 overflow-y-auto">
           {menuItems.map((item) => {
@@ -358,7 +446,7 @@ function Dashboard({ user, onLogout }) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-8 overflow-auto bg-gray-50">
+      <div className="flex-1 p-8 overflow-auto bg-white-gloss">
         {renderContent()}
       </div>
 

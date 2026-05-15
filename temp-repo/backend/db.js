@@ -177,6 +177,36 @@ async function initDatabase() {
       UNIQUE(user_id, template_name)
     )`);
 
+    // NEW: Global Template Images (Admin controlled)
+    await client.query(`CREATE TABLE IF NOT EXISTS global_template_images (
+      id SERIAL PRIMARY KEY,
+      template_type VARCHAR(50) NOT NULL UNIQUE,
+      image_url TEXT NOT NULL,
+      updated_by INTEGER REFERENCES users(id),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )`);
+
+    // Seed default images if the table is empty
+    const checkImages = await client.query('SELECT count(*) FROM global_template_images');
+    if (parseInt(checkImages.rows[0].count) === 0) {
+      const defaultImages = [
+        ['executive', 'input_file_0.png'],
+        ['professional', 'input_file_1.png'],
+        ['ats', 'input_file_2.png'],
+        ['modern', 'input_file_3.png'],
+        ['minimal', 'input_file_4.png'],
+        ['creative', 'input_file_5.png']
+      ];
+      
+      for (const [type, url] of defaultImages) {
+        await client.query(
+          'INSERT INTO global_template_images (template_type, image_url) VALUES ($1, $2)',
+          [type, url]
+        );
+      }
+      console.log('✅ Global templates seeded');
+    }
+
     console.log('✅ Database tables ready');
   } catch (error) {
     console.error('❌ Database init error:', error.message);

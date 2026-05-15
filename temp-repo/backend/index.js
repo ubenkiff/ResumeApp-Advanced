@@ -16,6 +16,8 @@ import aiRouter from './routes/ai.js';
 import coverDataRouter from './routes/user-cover-data.js';
 import optimizedResumesRouter, { getPublicOptimizedResume } from './routes/optimized-resumes.js';
 import authRouter from './routes/auth.js';
+import profileRouter from './routes/profile.js';
+import globalTemplatesRouter from './routes/global-templates.js';
 import { authenticate } from './middleware/auth.js';
 import imageService from './services/imageService.js';
 
@@ -112,6 +114,12 @@ app.get('/api/health', async (req, res) => {
 
 // ============ AUTH ROUTES ============
 app.use('/api/auth', authRouter);
+
+// ============ PROFILE ROUTES ============
+app.use('/api/profile', profileRouter);
+
+// ============ GLOBAL TEMPLATE ROUTES ============
+app.use('/api/global-templates', globalTemplatesRouter);
 
 // ============ ADMIN MIDDLEWARE ============
 

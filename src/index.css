@@ -1,6 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  
   --animation-scan: scan 2s linear infinite;
   @keyframes scan {
     0% { top: 0%; opacity: 0; }
@@ -8,6 +12,32 @@
     95% { opacity: 1; }
     100% { top: 100%; opacity: 0; }
   }
+}
+
+.bg-white-gloss {
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #f8f9ff 50%,
+    #ffffff 100%
+  );
+}
+
+.hero-thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1.414; /* A4 Ratio */
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transition: all 0.2s;
+  object-fit: cover;
+  object-position: top;
+  cursor: pointer;
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.hero-thumb:hover {
+  transform: scale(1.05);
 }
 
 @media print {

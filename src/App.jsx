@@ -76,9 +76,18 @@ function LoginPage({ onLogin }) {
       {/* Navigation Bar */}
       <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <i className="fas fa-file-alt text-blue-600 text-2xl"></i>
-            <span className="font-bold text-xl text-gray-900">ResumeApp</span>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg transform -rotate-3 group cursor-pointer hover:rotate-0 transition-all duration-300">
+              <i className="fas fa-file-alt text-white text-xl"></i>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-black text-2xl text-gray-900 tracking-tighter leading-none font-display">
+                Resume<span className="text-blue-600">App</span>
+              </span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1 font-display">
+                Engineering <span className="text-purple-500">•</span> UAE & GCC
+              </span>
+            </div>
           </div>
           <div className="flex gap-3">
             <button
@@ -98,37 +107,69 @@ function LoginPage({ onLogin }) {
       </nav>
 
       {/* Hero Section */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full mb-6">
-            <span className="text-blue-600 text-sm font-medium">✨ Launch your career</span>
+      <main className="relative min-h-[calc(100vh-73px)] flex flex-col items-center justify-center overflow-hidden">
+        {/* Background Heroes */}
+        <div className="absolute inset-0 flex">
+          <div className="relative flex-1">
+            <img 
+              src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&q=80" 
+              className="absolute inset-0 w-full h-full object-cover" 
+              alt="Creative" 
+            />
+            <div className="absolute inset-0 bg-white/70 flex items-end justify-center pb-12">
+              <span className="text-xl font-medium text-gray-400">Be Creative</span>
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">
+          <div className="relative flex-1 border-x border-white/20">
+            <img 
+              src="https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?w=800&q=80" 
+              className="absolute inset-0 w-full h-full object-cover" 
+              alt="Unique" 
+            />
+            <div className="absolute inset-0 bg-white/70 flex items-end justify-center pb-12">
+              <span className="text-xl font-medium text-gray-400">Be Unique</span>
+            </div>
+          </div>
+          <div className="relative flex-1">
+            <img 
+              src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&q=80" 
+              className="absolute inset-0 w-full h-full object-cover" 
+              alt="Inspired" 
+            />
+            <div className="absolute inset-0 bg-white/70 flex items-end justify-center pb-12">
+              <span className="text-xl font-medium text-gray-400">Be Inspired</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Overlay */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center -mt-24">
+          <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm px-5 py-2 rounded-full mb-8 shadow-sm border border-gray-100">
+            <span className="text-blue-600 text-sm font-bold tracking-wide uppercase">📍 UAE and Middle East</span>
+          </div>
+          <h1 className="text-5xl md:text-6xl lg:text-8xl font-black text-gray-900 tracking-tighter leading-[0.9] font-display">
             Build a resume that <br />
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">tells your story</span>
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent italic">tells your story</span>
           </h1>
-          <p className="mt-6 text-xl text-gray-500 max-w-3xl mx-auto">
-            A focused, confidence-building tool for job-seekers to assemble a beautiful, shareable professional portfolio.
+          <p className="mt-8 text-xl text-gray-600 max-w-3xl mx-auto font-medium leading-relaxed">
+            Precision-engineered resumes designed for elite career opportunities across the UAE, Saudi Arabia, and the entire GCC professional landscape.
           </p>
           
           {/* CTA Buttons */}
-          <div className="mt-10 flex justify-center gap-4">
+          <div className="mt-12 flex flex-col sm:flex-row justify-center gap-4">
             <button
               onClick={() => { setIsLogin(false); setShowAuthModal(true); }}
-              className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm"
+              className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               Start Building Free
             </button>
             <button
               onClick={() => setShowDemo(true)}
-              className="px-8 py-3 bg-white text-gray-700 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50 transition"
+              className="px-8 py-4 bg-white/80 backdrop-blur-sm text-gray-700 font-bold rounded-lg border border-gray-200 hover:bg-white transition shadow-sm hover:shadow-md transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
             >
-              <i className="fas fa-play mr-2"></i> View Demo
+              <i className="fas fa-play text-blue-600"></i> View Demo
             </button>
           </div>
-
-          {/* Spacer */}
-          <div className="mt-16"></div>
         </div>
       </main>
 
@@ -137,7 +178,7 @@ function LoginPage({ onLogin }) {
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50" onClick={() => setShowDemo(false)}>
           <div className="bg-white rounded-2xl max-w-4xl w-full p-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900">ResumeApp Demo</h3>
+              <h3 className="text-xl font-bold text-gray-900">ResumeApp - Engineering Resumes Demo</h3>
               <button onClick={() => setShowDemo(false)} className="text-gray-400 hover:text-gray-600">
                 <i className="fas fa-times text-2xl"></i>
               </button>

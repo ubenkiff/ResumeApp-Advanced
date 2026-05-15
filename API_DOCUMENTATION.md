@@ -6,22 +6,114 @@
 - **Production Frontend:** `https://resumeapp.onrender.com`
 
 ## 1. ENGINEERING OPTIMIZATION (Python API)
-These endpoints are optimized for UAE/GCC engineering metrics.
+These endpoints are optimized for UAE/GCC engineering metrics and use the FastAPI backend (Port 8000).
 
 ### POST /api/resume/analyze
 Analyzes ATS performance and UAE market fit.
 
+**Request:**
+```json
+{
+  "resume_text": "string",
+  "job_title": "string (optional)"
+}
+```
+
+**Response:**
+```json
+{
+  "ats_score": 0-100,
+  "missing_keywords": ["list"],
+  "format_issues": ["list"],
+  "recommendations": ["list"],
+  "uae_market_fit": "High|Medium|Low"
+}
+```
+
 ### POST /api/resume/optimize
 AI-powered resume rewriting for specific roles and industries.
+
+**Request:**
+```json
+{
+  "resume_text": "string",
+  "target_role": "string",
+  "industry": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "optimized_text": "string",
+  "changes_made": ["list"],
+  "keyword_density": { "skill_name": 1 }
+}
+```
 
 ### POST /api/linkedin/optimize
 Optimizes LinkedIn headlines and 'About' sections for visibility.
 
+**Request:**
+```json
+{
+  "current_headline": "string",
+  "current_about": "string",
+  "resume_text": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "suggested_headline": "string",
+  "suggested_about": "string",
+  "keyword_recommendations": ["list"],
+  "section_by_section": { "experience": "string", "skills": "string" }
+}
+```
+
 ### GET /api/jobs/match
 Compares resume content against job descriptions.
 
+**Query Parameters:**
+- `job_text`: string
+- `resume_text`: string
+
+**Response:**
+```json
+{
+  "match_percentage": 0-100,
+  "matched_keywords": ["list"],
+  "missing_keywords": ["list"],
+  "recommended_changes": ["list"]
+}
+```
+
 ### POST /api/export/csv
 Exports resume versions into a CSV file.
+
+**Request:**
+```json
+{
+  "resume_versions": [
+    { "title": "string", "content": "string" }
+  ]
+}
+```
+
+**Response:** Binary file download (`text/csv`).
+
+### GET /health
+Basic system health check.
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "service": "ResumaApp Backend"
+}
+```
 
 ---
 
